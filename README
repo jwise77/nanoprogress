@@ -1,0 +1,18 @@
+nanoProgress - outputs timestepping information since the last topgrid
+timestep
+
+Author: John H. Wise
+Date: 2004-
+Homepage: http://bitbucket.org/jwise77/nanoprogress
+
+Usage: ./nanoProgress [enzo stdout]
+
+No flags necessary.
+
+nanoProgress parses through a file with enzo's STDOUT for the
+timesteps on each AMR level.  It starts with the last topgrid
+timestep.  After collecting all of these data, it tells the user (a)
+the total code time elapsed on each level, (b) average timestep, (c)
+number of timesteps, and (d) total number of timesteps required to
+finish a topgrid timestep.  It also gives the redshift, code time,
+topgrid dt, and cycle number of the last topgrid timestep.

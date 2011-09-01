@@ -1,0 +1,46 @@
+#!/usr/bin/perl
+
+use POSIX qw(ceil floor);
+
+die "usage: $0 <enzo stdout>\n" if (scalar @ARGV < 1);
+
+$outfile = @ARGV[0];
+
+$|++;
+printf "Parsing through $outfile";
+
+$pos = `grep -b "z =" $outfile | tail -n 1 | cut -f1 -d:`;
+
+print "\n\n";
+
+open(OUT, $outfile);
+seek OUT, $pos, 0;
+$_ = <OUT>;
+@topgrid = /= ([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)/ig;
+$redshift = $topgrid[6];
+$toptime = $topgrid[2];
+$topdt = $topgrid[0];
+$cycle = $topgrid[4];
+
+# topgrid (0 = dt, 1 = time, 2 = cycle, 3 = z)
+printf "LAST TOPGRID STEP: z = %9.6f, time = %9.6f, dt = %9.6g, cycle = %d\n\n",
+    $redshift, $toptime, $topdt, $cycle;
+
+while (<OUT>) {
+    if (/^Level/) { 
+	/\[(.*)\]/i;  $level = $1;
+	/= (.*)\(/i;  $dt    = $1;
+	$timesteps[$level]++;
+	$time[$level] += $dt;
+    }
+}
+
+close(OUT);
+
+print "                 .....Statistics after last topgrid step.....\n";
+printf "%10s %15s %15s %15s %15s\n", "Level", "total time", "avg dt", "timesteps", "needed";
+print "=" x 79 . "\n";
+for $i (0 .. $#time) {
+    printf "%10d %15.6g %15.6g %15d %15d\n", $i, $time[$i], 
+    $time[$i]/$timesteps[$i], $timesteps[$i], int($topdt*$timesteps[$i]/$time[$i]);
+}
